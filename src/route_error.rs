@@ -122,6 +122,7 @@ where
         }
     }
 
+    /// Returns the error message that will be shown to the end user.
     pub fn public_error_message<'a>(&'a self) -> &'a str {
         if let Some(public_error_message) = self.public_error_message.as_ref() {
             return public_error_message;
@@ -130,6 +131,7 @@ where
         status_code_to_public_message(self.status_code())
     }
 
+    /// Returns the status code for the response.
     pub fn status_code(&self) -> StatusCode {
         self.status_code
     }
