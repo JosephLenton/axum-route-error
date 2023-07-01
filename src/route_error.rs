@@ -26,7 +26,7 @@ use super::RouteErrorOutput;
 ///     }
 /// ```
 ///
-/// Most of the time you will want to simply return a ...
+/// Most of the time you will want to simply return one of:
 ///
 ///  - `RouteError::new_unauthorised()`
 ///  - `RouteError::new_not_found()`
@@ -96,10 +96,39 @@ where
         }
     }
 
-    /// Sets extra data to be added to the output.
     ///
+    /// Sets additional error data to be added to the output.
     /// Data here must be serialisable into Json.
-    pub fn set_extra_data<NewS>(self, extra_data: NewS) -> RouteError<NewS>
+    ///
+    /// # Example Code
+    ///
+    /// ```rust
+    /// use ::axum_route_error::RouteError;
+    /// use ::serde::Deserialize;
+    /// use ::serde::Serialize;
+    ///
+    /// #[derive(Deserialize, Serialize, Debug)]
+    /// pub struct UserErrorInformation {
+    ///     pub guid: String
+    /// }
+    ///
+    /// let guid = "abc123".to_string();
+    /// let err = RouteError::new_not_found()
+    ///     .set_error_data(UserErrorInformation {
+    ///         guid,
+    ///     });
+    /// ```
+    ///
+    /// This will return a response with the JSON format:
+    ///
+    /// ```json
+    /// {
+    ///   "error": "The resource was not found",
+    ///   "username": "<the-username>"
+    /// }
+    /// ```
+    ///
+    pub fn set_error_data<NewS>(self, extra_data: NewS) -> RouteError<NewS>
     where
         NewS: Serialize + for<'a> Deserialize<'a> + Debug,
     {
@@ -204,6 +233,13 @@ fn status_code_to_public_message(status_code: StatusCode) -> &'static str {
         StatusCode::UNAUTHORIZED => "You are not authorised to access this endpoint",
         StatusCode::NOT_FOUND => "The resource was not found",
         StatusCode::BAD_REQUEST => "Bad request made",
-        _ => "An unexpected error occurred",
+        StatusCode::FORBIDDEN => "Request is forbidden",
+        StatusCode::IM_A_TEAPOT => "I'm a teapot",
+        StatusCode::TOO_MANY_REQUESTS => "Too many requests",
+        StatusCode::BAD_GATEWAY => "Bad gateway",
+        StatusCode::SERVICE_UNAVAILABLE => "Service unavailable",
+        StatusCode::GATEWAY_TIMEOUT => "Gateway timeout",
+        StatusCode::INTERNAL_SERVER_ERROR => "An unexpected error occurred",
+        _ => "An unknown error occurred",
     }
 }
