@@ -1,6 +1,6 @@
 [package]
 name = "axum-route-error"
-version = "2.0.0"
+version = "3.0.0"
 edition = "2021"
 license = "MIT"
 description = "A common error response for Axum servers"
@@ -12,6 +12,7 @@ readme = "README.md"
 documentation = "https://docs.rs/axum-route-error/latest/axum-route-error"
 
 [dependencies]
-anyhow = "1.0.71"
+anyhow = { version = "1.0.71", features = ["backtrace"] }
 axum = { version = "0.6.18" }
 serde = { version = "1.0.164", features = ["derive"] }
+tracing = "0.1.37"

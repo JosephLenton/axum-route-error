@@ -219,9 +219,12 @@ where
     FE: Into<AnyhowError>,
 {
     fn from(error: FE) -> Self {
+        let anyhow_error : AnyhowError = error.into();
+        ::tracing::error!("{:?}", anyhow_error);
+
         RouteError {
             status_code: StatusCode::INTERNAL_SERVER_ERROR,
-            error: Some(error.into()),
+            error: Some(anyhow_error),
             ..Self::default()
         }
     }
