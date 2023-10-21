@@ -11,6 +11,7 @@ use ::std::fmt::Formatter;
 use ::std::fmt::Result as FmtResult;
 
 use super::RouteErrorOutput;
+use crate::RouteInternalErrorOutput;
 
 /// This Rust module provides a standard error type for routes.
 /// It encapsulates information about errors that occur while handling requests.
@@ -35,7 +36,7 @@ use super::RouteErrorOutput;
 ///
 /// Depending on which is the most appropriate.
 ///
-pub struct RouteError<S = ()>
+pub struct RouteError<S = (), const EXPOSE_INTERNAL_ERROR: bool = false>
 where
     S: Serialize + for<'a> Deserialize<'a> + Debug,
 {
@@ -74,7 +75,7 @@ impl RouteError<()> {
     }
 }
 
-impl<S> RouteError<S>
+impl<S, const EXPOSE_INTERNAL_ERROR: bool> RouteError<S, EXPOSE_INTERNAL_ERROR>
 where
     S: Serialize + for<'a> Deserialize<'a> + Debug,
 {
@@ -166,7 +167,7 @@ where
     }
 }
 
-impl<S> Default for RouteError<S>
+impl<S, const EXPOSE_INTERNAL_ERROR: bool> Default for RouteError<S, EXPOSE_INTERNAL_ERROR>
 where
     S: Serialize + for<'a> Deserialize<'a> + Debug,
 {
@@ -180,7 +181,7 @@ where
     }
 }
 
-impl<S> IntoResponse for RouteError<S>
+impl<S, const EXPOSE_INTERNAL_ERROR: bool> IntoResponse for RouteError<S, EXPOSE_INTERNAL_ERROR>
 where
     S: Serialize + for<'a> Deserialize<'a> + Debug,
 {
@@ -192,20 +193,40 @@ where
             None => status_code_to_public_message(status).to_string(),
         };
 
-        let output = RouteErrorOutput { error, extra_data };
+        let internal_error = if EXPOSE_INTERNAL_ERROR {
+            self.error.map(|err| RouteInternalErrorOutput {
+                name: format!("{}", err),
+                debug: format!("{:?}", err),
+            })
+        } else {
+            None
+        };
+
+        let output = RouteErrorOutput {
+            error,
+            internal_error,
+            extra_data,
+            ..RouteErrorOutput::default()
+        };
         let body = Json(output);
 
         (status, body).into_response()
     }
 }
 
-impl Debug for RouteError {
+impl<S, const EXPOSE_INTERNAL_ERROR: bool> Debug for RouteError<S, EXPOSE_INTERNAL_ERROR>
+where
+    S: Serialize + for<'a> Deserialize<'a> + Debug,
+{
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "{}, {:?}", self.public_error_message(), self.error)
     }
 }
 
-impl Display for RouteError {
+impl<S, const EXPOSE_INTERNAL_ERROR: bool> Display for RouteError<S, EXPOSE_INTERNAL_ERROR>
+where
+    S: Serialize + for<'a> Deserialize<'a> + Debug,
+{
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         write!(f, "{}", self.public_error_message())
     }
@@ -213,13 +234,13 @@ impl Display for RouteError {
 
 /// This essentially means if you can turn it into an Anyhow,
 /// then you can turn it into a RouteError.
-impl<S, FE> From<FE> for RouteError<S>
+impl<S, const EXPOSE_INTERNAL_ERROR: bool, FE> From<FE> for RouteError<S, EXPOSE_INTERNAL_ERROR>
 where
     S: Serialize + for<'a> Deserialize<'a> + Debug,
     FE: Into<AnyhowError>,
 {
     fn from(error: FE) -> Self {
-        let anyhow_error : AnyhowError = error.into();
+        let anyhow_error: AnyhowError = error.into();
         ::tracing::error!("{:?}", anyhow_error);
 
         RouteError {
@@ -244,5 +265,33 @@ fn status_code_to_public_message(status_code: StatusCode) -> &'static str {
         StatusCode::GATEWAY_TIMEOUT => "Gateway timeout",
         StatusCode::INTERNAL_SERVER_ERROR => "An unexpected error occurred",
         _ => "An unknown error occurred",
+    }
+}
+
+#[cfg(test)]
+mod test_route_error {
+    use super::*;
+
+    use crate::RouteErrorOutput;
+    use ::anyhow::anyhow;
+    use ::axum::response::IntoResponse;
+    use ::hyper::body::to_bytes;
+    use ::serde_json::from_slice;
+
+    #[tokio::test]
+    async fn it_should_not_output_internal_error() {
+        fn raise_error() -> Result<(), RouteError> {
+            Err(anyhow!("Too many foxes in the DB"))?;
+
+            Ok(())
+        }
+
+        let err = raise_error().unwrap_err();
+        let response = err.into_response();
+        let (_, response_body) = response.into_parts();
+        let response_bytes = to_bytes(response_body).await.unwrap();
+        let body = from_slice::<RouteErrorOutput<()>>(&response_bytes).unwrap();
+
+        assert_eq!(body.internal_error, None);
     }
 }
