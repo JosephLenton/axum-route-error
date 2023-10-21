@@ -129,3 +129,11 @@ then this will return a 404 Response with the following JSON:
   "username": "<the-username>"
 }
 ```
+
+## Making Internal Errors public
+
+Sometimes you *want* to make internal errors public,
+such as for internal services.
+
+For this you can use the `RouteInternalError`. It's identical,
+but adds adds `internal_error` information to the response.
