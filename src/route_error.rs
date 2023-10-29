@@ -67,6 +67,10 @@ impl RouteError<()> {
         Self::new_from_status(StatusCode::CONFLICT)
     }
 
+    pub fn new_forbidden() -> RouteError<()> {
+        Self::new_from_status(StatusCode::FORBIDDEN)
+    }
+
     pub fn new_from_status(status_code: StatusCode) -> RouteError<()> {
         Self {
             status_code,
