@@ -279,7 +279,7 @@ mod test_route_error {
     use crate::RouteErrorOutput;
     use ::anyhow::anyhow;
     use ::axum::response::IntoResponse;
-    use ::hyper::body::to_bytes;
+    use ::http_body_util::BodyExt;
     use ::serde_json::from_slice;
 
     #[tokio::test]
@@ -292,8 +292,8 @@ mod test_route_error {
 
         let err = raise_error().unwrap_err();
         let response = err.into_response();
-        let (_, response_body) = response.into_parts();
-        let response_bytes = to_bytes(response_body).await.unwrap();
+        let response_body = response.into_body();
+        let response_bytes = response_body.collect().await.unwrap().to_bytes();
         let body = from_slice::<RouteErrorOutput<()>>(&response_bytes).unwrap();
 
         assert_eq!(body.internal_error, None);
