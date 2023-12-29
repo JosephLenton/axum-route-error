@@ -7,6 +7,9 @@
     A common error response for Axum routes
   </h3>
 
+  [![crate](https://img.shields.io/crates/v/axum-route-error.svg)](https://crates.io/crates/axum-route-error)
+  [![docs](https://docs.rs/axum-route-error/badge.svg)](https://docs.rs/axum-route-error)
+
   <br>
 </div>
 
