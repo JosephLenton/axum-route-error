@@ -1,6 +1,6 @@
-use ::serde::Deserialize;
-use ::serde::Serialize;
-use ::std::fmt::Debug;
+use serde::Deserialize;
+use serde::Serialize;
+use std::fmt::Debug;
 
 use crate::RouteInternalErrorOutput;
 
