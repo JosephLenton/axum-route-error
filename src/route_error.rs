@@ -1,14 +1,14 @@
-use ::anyhow::Error as AnyhowError;
-use ::axum::http::StatusCode;
-use ::axum::response::IntoResponse;
-use ::axum::response::Response;
-use ::axum::Json;
-use ::serde::Deserialize;
-use ::serde::Serialize;
-use ::std::fmt::Debug;
-use ::std::fmt::Display;
-use ::std::fmt::Formatter;
-use ::std::fmt::Result as FmtResult;
+use anyhow::Error as AnyhowError;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::response::Response;
+use axum::Json;
+use serde::Deserialize;
+use serde::Serialize;
+use std::fmt::Debug;
+use std::fmt::Display;
+use std::fmt::Formatter;
+use std::fmt::Result as FmtResult;
 
 use super::RouteErrorOutput;
 use crate::RouteInternalErrorOutput;
@@ -108,9 +108,9 @@ where
     /// # Example Code
     ///
     /// ```rust
-    /// use ::axum_route_error::RouteError;
-    /// use ::serde::Deserialize;
-    /// use ::serde::Serialize;
+    /// use axum_route_error::RouteError;
+    /// use serde::Deserialize;
+    /// use serde::Serialize;
     ///
     /// #[derive(Deserialize, Serialize, Debug)]
     /// pub struct UserErrorInformation {
@@ -275,12 +275,11 @@ fn status_code_to_public_message(status_code: StatusCode) -> &'static str {
 #[cfg(test)]
 mod test_route_error {
     use super::*;
-
     use crate::RouteErrorOutput;
-    use ::anyhow::anyhow;
-    use ::axum::response::IntoResponse;
-    use ::http_body_util::BodyExt;
-    use ::serde_json::from_slice;
+    use anyhow::anyhow;
+    use axum::response::IntoResponse;
+    use http_body_util::BodyExt;
+    use serde_json::from_slice;
 
     #[tokio::test]
     async fn it_should_not_output_internal_error() {

@@ -26,9 +26,9 @@ These patterns include:
 Below is a mock example route to download a User object:
 
 ```rust
-use ::axum::extract::State;
-use ::axum_route_error::RouteError;
-use ::sea_orm::DatabaseConnection;
+use axum::extract::State;
+use axum_route_error::RouteError;
+use sea_orm::DatabaseConnection;
 
 pub async fn route_get_user(
     State(ref db): State<DatabaseConnection>,
@@ -59,9 +59,9 @@ We want to return a 500 if it returns an error (like above),
 and change the code to return a 404 if the user is not found.
 
 ```rust
-use ::axum::extract::State;
-use ::axum_route_error::RouteError;
-use ::sea_orm::DatabaseConnection;
+use axum::extract::State;
+use axum_route_error::RouteError;
+use sea_orm::DatabaseConnection;
 
 pub async fn route_get_user(
     State(ref db): State<DatabaseConnection>,
@@ -93,11 +93,11 @@ This can be done by making a new type that serializes using Serde,
 and then adding this to the `RouteError`.
 
 ```rust
-use ::axum::extract::State;
-use ::axum_route_error::RouteError;
-use ::sea_orm::DatabaseConnection;
-use ::serde::Deserialize;
-use ::serde::Serialize;
+use axum::extract::State;
+use axum_route_error::RouteError;
+use sea_orm::DatabaseConnection;
+use serde::Deserialize;
+use serde::Serialize;
 
 // The additional error information needs to derive these three traits.
 #[derive(Deserialize, Serialize, Debug)]

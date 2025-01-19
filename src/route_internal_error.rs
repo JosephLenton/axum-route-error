@@ -8,12 +8,11 @@ pub type RouteInternalError<S = ()> = RouteError<S, true>;
 #[cfg(test)]
 mod test_route_internal_error {
     use super::*;
-
     use crate::RouteErrorOutput;
-    use ::anyhow::anyhow;
-    use ::axum::response::IntoResponse;
-    use ::http_body_util::BodyExt;
-    use ::serde_json::from_slice;
+    use anyhow::anyhow;
+    use axum::response::IntoResponse;
+    use http_body_util::BodyExt;
+    use serde_json::from_slice;
 
     #[tokio::test]
     async fn it_should_output_internal_error() {
